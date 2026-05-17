@@ -1,0 +1,542 @@
+{
+  "name": "meeting-intelligence",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Edit Fields').item.json.meeting_transcript }}",
+        "options": {
+          "systemMessage": "=You are a business meeting analyst. Your job is to create executive summaries of meeting transcripts.\n\nINPUT: A meeting transcript\nOUTPUT: A JSON object with a \"summary\" field\n\nRULES:\n- Summary must be 2-3 sentences maximum\n- Focus on key decisions and outcomes\n- Use professional language\n- Ignore chitchat and small talk\n\nReturn ONLY this JSON format, nothing else:\n{\n  \"summary\": \"...\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        720,
+        176
+      ],
+      "id": "e08d01e8-22fa-45cb-84fb-5b1cb013534a",
+      "name": "AI Agent",
+      "onError": "continueRegularOutput",
+      "notes": "={\n  \"error_type\": \"openai_summarization_failed\",\n  \"error_message\": \"{{ $error.message }}\",\n  \"timestamp\": \"{{ new Date().toISOString() }}\",\n  \"fallback_summary\": \"Failed to generate summary. Please review transcript manually.\"\n}"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {
+          "maxTokens": 500,
+          "temperature": 0.3
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        720,
+        352
+      ],
+      "id": "d0fff208-82d3-4d39-b93a-7eb070ea6422",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "16qYq8nQslLQc0Kj",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "865f271e-decb-46c4-a631-e1514ba39d5c",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -128,
+        64
+      ],
+      "id": "310b7a27-ece1-479c-8c02-4b8d3f6d00de",
+      "name": "Webhook",
+      "webhookId": "865f271e-decb-46c4-a631-e1514ba39d5c"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "36b9a6bc-6eb7-4888-8590-ec86de61e1f9",
+              "name": "meeting_transcript",
+              "value": "={{ $json.body.transcript }}",
+              "type": "string"
+            },
+            {
+              "id": "cd6af9dc-27ac-4075-b067-28ff910b0ad0",
+              "name": "meeting_date",
+              "value": "={{ $json.body.date }}",
+              "type": "string"
+            },
+            {
+              "id": "067f01ac-6191-477e-9fb0-ee1e39c3ec1e",
+              "name": "meeting_title",
+              "value": "={{ $json.body.title }}",
+              "type": "string"
+            },
+            {
+              "id": "b763a31d-7717-405d-ba88-0c339f12b71e",
+              "name": "participants",
+              "value": "={{ $json.body.participants }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        96,
+        64
+      ],
+      "id": "3d428788-f654-40ca-9d10-46e575f3071e",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "8f066732-a679-4416-9728-0a85bc527cf2",
+              "leftValue": "={{ $('Edit Fields').item.json.meeting_transcript }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notExists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "3821aeae-2909-4a48-86f1-5f980b61d7a3",
+              "leftValue": "={{ $('Edit Fields').item.json.meeting_date }}",
+              "rightValue": "",
+              "operator": {
+                "type": "dateTime",
+                "operation": "notExists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "1b9a1d8a-18de-4ce1-b510-d14895d58900",
+              "leftValue": "={{ $('Edit Fields').item.json.participants }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "array",
+                "operation": "lengthEquals",
+                "rightType": "number"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        512,
+        64
+      ],
+      "id": "086d3980-9b56-4b15-aa9c-5f4c27be1dd1",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{ \"error\": \"Missing required fields\", \"required\": [\"transcript\", \"date\", \"title\", \"participants\"] }",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        736,
+        0
+      ],
+      "id": "a6080a90-5aa6-4c57-9abd-46b8a83abd40",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"success\",\n  \"message\": \"Meeting received and validated\",\n  \"data\": {\n    \"summary\": \"{{ $json.summary.summary }}\",\n    \"action_items\": {{ JSON.stringify($json.action_items) }},\n    \"risks\": {{ JSON.stringify($json.risks) }},\n    \"meeting_title\": \"{{ $('Edit Fields').item.json.meeting_title }}\",\n    \"meeting_date\": \"{{ $('Edit Fields').item.json.meeting_date }}\",\n    \"participants\": {{ JSON.stringify($('Edit Fields').item.json.participants) }}\n      },\n    \"processing_metrics\": {\n    \"estimated_cost_usd\": \"{{ $json.estimated_cost_usd }}\",\n    \"tokens_used\": \"{{ $json.tokens_used }}\",\n    \"processing_time_seconds\": \"{{ $execution.executionTime / 1000 }}\"\n  }\n}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2144,
+        176
+      ],
+      "id": "89d22658-67c6-4f3c-bba9-405ee713dd3b",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Edit Fields').item.json.meeting_transcript }}",
+        "options": {
+          "systemMessage": "=You are a business analyst extracting action items from meeting transcripts.\n\nINPUT: A meeting transcript\nOUTPUT: A JSON array of action items\n\nRULES:\n- Extract only explicit action items\n- Include: what, who is doing it, deadline if mentioned\n- If no owner, assign \"TBD\"\n- If no deadline, put \"No deadline\"\n- Return JSON array format\n\nReturn ONLY this JSON, nothing else:\n[\n  {\n    \"item\": \"...\",\n    \"owner\": \"...\",\n    \"deadline\": \"...\"\n  }\n]\n\nIf no action items found, return empty array []."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1056,
+        176
+      ],
+      "id": "7809d10d-37af-4c85-a1e4-b3e35909f463",
+      "name": "AI Agent1",
+      "onError": "continueRegularOutput",
+      "notes": "={\n  \"status\": \"error\",\n  \"message\": \"Processing failed\",\n  \"error_type\": \"{{ $json.error_type || 'unknown' }}\",\n  \"error_details\": \"{{ $json.error_message || 'No details available' }}\",\n  \"timestamp\": \"{{ new Date().toISOString() }}\",\n  \"recommendation\": \"Check OpenAI API status or contact support\"\n}"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {
+          "maxTokens": 1000,
+          "temperature": 0.3
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1056,
+        352
+      ],
+      "id": "a4681c6c-c748-4a03-8c1c-000bf113b331",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "16qYq8nQslLQc0Kj",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Edit Fields').item.json.meeting_transcript }}",
+        "options": {
+          "systemMessage": "=You are a risk analyst. Identify risks and blockers from this meeting transcript.\n\nRULES:\n- Identify explicit blockers mentioned\n- Classify severity: HIGH, MEDIUM, LOW\n- Return JSON array\n\nReturn ONLY this JSON:\n[\n  {\n    \"blocker\": \"...\",\n    \"severity\": \"HIGH|MEDIUM|LOW\",\n    \"context\": \"...\"\n  }\n]\n\nIf no blockers found, return empty array []."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1392,
+        176
+      ],
+      "id": "697bad9a-944f-455b-8cdd-fe73e4fcfc58",
+      "name": "AI Agent2"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {
+          "maxTokens": 1000,
+          "temperature": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1392,
+        352
+      ],
+      "id": "fa5b7288-9a12-409f-8ab1-c1fb122b9602",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "16qYq8nQslLQc0Kj",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f2bb750e-42b4-4856-9bd9-0b008aec0110",
+              "name": "summary",
+              "value": "={{ $('AI Agent').item.json.output }}",
+              "type": "string"
+            },
+            {
+              "id": "c1f16934-742b-4bac-92fb-05facdba4177",
+              "name": "action_items",
+              "value": "={{ $('AI Agent1').item.json.output }}",
+              "type": "string"
+            },
+            {
+              "id": "0547b223-3b05-4953-9e64-cb38d5c76196",
+              "name": "risks",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1728,
+        176
+      ],
+      "id": "292a4b71-636a-43a7-b8dd-f97b17be9e36",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Calculate API costs\nconst summarizationTokens = 500; // max tokens used\nconst actionItemsTokens = 1000;\nconst risksTokens = 800;\n\n// const costPerMTokInput = 0.003; // GPT-4o input cost\nconst costPerMTokOutput = 0.006; // GPT-4o output cost\n\nconst estimatedCost = (\n  (summarizationTokens * costPerMTokOutput / 1000000) +\n  (actionItemsTokens * costPerMTokOutput / 1000000) +\n  (risksTokens * costPerMTokOutput / 1000000)\n).toFixed(4);\n\nreturn {\n  summary: JSON.parse($input.first().json.summary || '{}'),\n  action_items: JSON.parse($input.first().json.action_items || '[]'),\n  risks: JSON.parse($input.first().json.risks || '[]'),\n  estimated_cost_usd: estimatedCost,\n  tokens_used: summarizationTokens + actionItemsTokens + risksTokens,\n  api_model: \"gpt-4o-mini\"\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1936,
+        176
+      ],
+      "id": "74308ab1-c3ea-4db6-99a1-e2666d911a39",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://webhook.site/3443926c-7902-4c64-a058-315de0e6b108",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"timestamp\": \"{{ new Date().toISOString() }}\",\n  \"event\": \"meeting_received\",\n  \"title\": \"{{ $json.meeting_title }}\",\n  \"participant_count\": \"{{ $json.participants.length }}\",\n  \"transcript_length\": \"{{ $json.meeting_transcript.length }}\",\n  \"source\": \"webhook\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        304,
+        64
+      ],
+      "id": "4fcb0cb8-4b63-4e85-8a9e-ea4fc84cb6be",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://webhook.site/3443926c-7902-4c64-a058-315de0e6b108",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"timestamp\": \"{{ new Date().toISOString() }}\",\n  \"event\": \"meeting_processed\",\n  \"title\": \"{{ $json.meeting_title }}\",\n  \"action_items_count\": \"{{ $json.total_action_items }}\",\n  \"risks_count\": \"{{ $json.total_risks }}\",\n  \"status\": \"success\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2320,
+        176
+      ],
+      "id": "ad5935ec-0282-438e-9789-823e083c627a",
+      "name": "HTTP Request1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "7771ff0d-d845-4c19-a33d-97b287dbc2fe",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2a0b22919410812e57c9285f9023951c820ccc74dfcb808aa4a46a5e3bfe8b6d"
+  },
+  "id": "yJl418sMSTy4ckp8",
+  "tags": []
+}
