@@ -2,7 +2,11 @@
 
 **An enterprise-grade AI workflow automation system that automatically processes meeting transcripts, extracts action items, identifies risks, and distributes summaries across your team.**
 
-## 🎯 Business Problem
+### Workflow Vide in Loom
+
+https://www.loom.com/share/263ff40c0b0c46298295451f3454fb4d
+
+## Business Problem
 
 Teams waste 5-8 hours per week manually:
 - Transcribing and summarizing meetings
@@ -13,7 +17,7 @@ Teams waste 5-8 hours per week manually:
 
 This system **automates the entire workflow** in seconds.
 
-## ✨ Key Features
+## Key Features
 
 - ✅ **Automated Meeting Intelligence** - Uses OpenAI GPT-4o to analyze transcripts
 - ✅ **Action Item Extraction** - Identifies tasks, owners, and deadlines automatically
@@ -23,7 +27,7 @@ This system **automates the entire workflow** in seconds.
 - ✅ **Enterprise Error Handling** - Graceful failures with detailed logging
 - ✅ **Cost Tracking** - Monitors API spending per meeting
 
-## 🏗️ Architecture
+## Architecture
 Webhook Input (Meeting Transcript)
 ↓
 Data Validation & Parsing
@@ -43,7 +47,7 @@ Multi-Channel Distribution
 ↓
 Audit Logging & Metrics
 
-## 🚀 Tech Stack
+## Tech Stack
 
 | Component | Technology | Purpose |
 |-----------|-----------|---------|
@@ -53,7 +57,7 @@ Audit Logging & Metrics
 | **Notifications** | Slack, Gmail | Alert distribution |
 | **Infrastructure** | n8n Cloud | Serverless execution |
 
-## 📊 Results & Metrics
+## Results & Metrics
 
 Typical meeting processing:
 - **Processing Time**: 8-12 seconds
@@ -88,7 +92,7 @@ Example output from a 15-minute meeting:
 }
 ```
 
-## 🔧 Setup Instructions
+## Setup Instructions
 
 ### Prerequisites
 - n8n Cloud account (free tier)
@@ -125,7 +129,7 @@ curl -X POST https://rishabh-sharma.app.n8n.cloud/webhook-test/865f271e-decb-46c
 
 See `QUICKSTART.md` for detailed setup.
 
-## 📁 Project Structure
+## Project Structure
 ai-meeting-intelligence-engine/
 ├── workflows/
 │   ├── 1-webhook-receiver-and-openai.json
@@ -153,7 +157,7 @@ ai-meeting-intelligence-engine/
 ├── QUICKSTART.md
 └── LICENSE
 
-## 💡 How It Works
+## How It Works
 
 ### 1. Input: Send Meeting Transcript
 
@@ -194,7 +198,7 @@ The system processes the transcript through 3 parallel OpenAI calls:
 - Email (executive summary)
 - Jira (create tickets for action items)
 
-## 🧪 Testing & Validation
+## Testing & Validation
 
 ### Test a Meeting
 
@@ -226,7 +230,7 @@ curl -X POST https://rishabh-sharma.app.n8n.cloud/webhook-test/865f271e-decb-46c
 
 See `testing/test-cases.md` for more test scenarios.
 
-## 📈 Real-World Use Cases
+## Real-World Use Cases
 
 ### Sales Team
 - Automatically log customer calls and action items
@@ -248,7 +252,7 @@ See `testing/test-cases.md` for more test scenarios.
 - Track hiring decisions
 - Capture onboarding action items
 
-## 🛡️ Security & Best Practices
+## Security & Best Practices
 
 - ✅ API keys stored in n8n credential manager (encrypted)
 - ✅ No sensitive data logged to external services
@@ -257,7 +261,7 @@ See `testing/test-cases.md` for more test scenarios.
 - ✅ Cost limits configured on OpenAI account
 - ✅ Audit trail for all processed meetings
 
-## 📊 Performance & Costs
+## Performance & Costs
 
 ### Typical Costs
 - 10 meetings/day: ~$1.50/month
@@ -270,7 +274,7 @@ See `testing/test-cases.md` for more test scenarios.
 - Notion storage: 2-3 seconds
 - Slack notification: 1-2 seconds
 
-## 🔄 Workflow Automation Capabilities
+## Workflow Automation Capabilities
 
 This project demonstrates:
 - ✅ Multi-step workflow orchestration
@@ -282,14 +286,14 @@ This project demonstrates:
 - ✅ Structured data handling
 - ✅ Enterprise error handling
 
-## 📚 Learning Resources
+## Learning Resources
 
 - [n8n Workflow Docs](https://docs.n8n.io/)
 - [OpenAI API Docs](https://platform.openai.com/docs)
 - [Notion API Docs](https://developers.notion.com/)
 - [Webhook Best Practices](https://docs.n8n.io/integrations/webhook/)
 
-## 🤝 Future Enhancements
+## Future Enhancements
 
 - [ ] Real-time meeting transcription via Zoom/Google Meet
 - [ ] Calendar integration for automatic meeting detection
@@ -300,7 +304,7 @@ This project demonstrates:
 - [ ] Dashboard with meeting analytics
 - [ ] Multi-language support
 
-## 📝 License
+## License
 
 MIT License - See LICENSE file
 
@@ -310,13 +314,9 @@ MIT License - See LICENSE file
 - LinkedIn: (https://www.linkedin.com/in/rishabh-sharma-14452a143/)
 - Email: rishabh97slg@email.com
 
-## 🙋 Support
+## Support
 
 For issues or questions:
 1. Check `docs/TROUBLESHOOTING.md`
 2. Review execution logs in n8n
 3. Test with sample data in `testing/`
-
----
-
-**Built with ❤️ for enterprise AI operations**
